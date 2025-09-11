@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'orders.apps.OrdersConfig',
-    'core.apps.CoreConfig'
+    'core.apps.CoreConfig',
+    'logical_delete.apps.LogicalDeleteConfig',
 ]
 
 MIDDLEWARE = [
