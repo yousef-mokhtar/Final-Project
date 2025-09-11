@@ -14,10 +14,15 @@ class User(AbstractUser, BaseModel):
 class Address(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
-    detail = models.TextField()
+    province = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    address_line = models.TextField()
     is_default = models.BooleanField(default=False)
 
 class OTPCode(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     code = models.CharField(max_length=6)
     expiration_time = models.DateTimeField()
+    is_verified = models.BooleanField(default=False)
+
