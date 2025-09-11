@@ -16,3 +16,8 @@ class Address(BaseModel):
     title = models.CharField(max_length=50)
     detail = models.TextField()
     is_default = models.BooleanField(default=False)
+
+class OTPCode(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    expiration_time = models.DateField()
