@@ -20,4 +20,4 @@ class Address(BaseModel):
 class OTPCode(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     code = models.CharField(max_length=6)
-    expiration_time = models.DateField()
+    expiration_time = models.DateTimeField()
