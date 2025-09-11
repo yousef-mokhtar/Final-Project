@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'orders.apps.OrdersConfig',
     'core.apps.CoreConfig',
     'logical_delete.apps.LogicalDeleteConfig',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [
