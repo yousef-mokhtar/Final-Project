@@ -11,3 +11,8 @@ class User(AbstractUser, BaseModel):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "phone"]
 
+class Address(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=50)
+    detail = models.TextField()
+    is_default = models.BooleanField(default=False)
