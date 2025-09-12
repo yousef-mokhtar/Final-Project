@@ -17,6 +17,8 @@ class AddressAdmin(admin.ModelAdmin):
     list_filter = ('province', 'city', 'is_default')
     search_fields = ('user__email', 'title', 'city', 'province', 'postal_code')
 
-
-
-admin.site.register(OTPCode)
+@admin.register(OTPCode)
+class OTPCodeAdmin(admin.ModelAdmin):
+    list_display = ('user', 'code', 'expiration_time', 'is_verified')
+    list_filter = ('is_verified',)
+    search_fields = ('user__email', 'code')
