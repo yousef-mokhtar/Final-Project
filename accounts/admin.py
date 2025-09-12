@@ -11,5 +11,12 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('email', 'username', 'phone')
     ordering = ('email',)
 
-admin.site.register(Address)
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    list_display = ('user', 'title', 'province', 'city', 'postal_code', 'is_default')
+    list_filter = ('province', 'city', 'is_default')
+    search_fields = ('user__email', 'title', 'city', 'province', 'postal_code')
+
+
+
 admin.site.register(OTPCode)
