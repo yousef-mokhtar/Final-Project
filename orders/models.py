@@ -5,9 +5,16 @@ from products.models import Product
 from seller.models import StoreItem
 
 class Order(BaseModel):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PROCESSING = "processing", "Processing"
+        SHIPPED = "shipped", "Shipped"
+        COMPLETED = "completed", "Completed"
+        CANCELED = "canceled", "Canceled"
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     is_paid = models.BooleanField(default=False)
     shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)
-    total_price = models.DecimalField(max_digits=15, default=0)
+    total_price = models.DecimalField(max_digits=15, decimal_places=0, default=0)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     paid_at = models.DateTimeField(null=True, blank=True)
