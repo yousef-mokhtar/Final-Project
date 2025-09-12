@@ -8,4 +8,7 @@ class OrderAdmin(admin.ModelAdmin):
     search_fields = ('user__email', 'id')
     
     
-admin.site.register(OrderItem)
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('order', 'store_item', 'quantity', 'price', 'total_price')
+    search_fields = ('order__id', 'store_item__name')
