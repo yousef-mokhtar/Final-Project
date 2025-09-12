@@ -12,7 +12,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('category', 'brand',)
     search_fields = ('name', 'brand')
 
-
-
-
-admin.site.register(ProductImage)
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ('product', 'alt_text')
+    search_fields = ('product__name', 'alt_text')
