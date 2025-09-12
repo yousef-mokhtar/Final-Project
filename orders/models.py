@@ -1,3 +1,37 @@
 from django.db import models
+from core.models import BaseModel
+from accounts.models import Address, User
+from products.models import Product
+from seller.models import StoreItem
 
-# Create your models here.
+class Order(BaseModel):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PROCESSING = "processing", "Processing"
+        SHIPPED = "shipped", "Shipped"
+        COMPLETED = "completed", "Completed"
+        CANCELED = "canceled", "Canceled"
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    is_paid = models.BooleanField(default=False)
+    shipping_address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)
+    total_price = models.DecimalField(max_digits=15, decimal_places=0, default=0)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    paid_at = models.DateTimeField(null=True, blank=True)
+
+    def calculate_total(self):
+        self.total_price = sum([item.total_price for item in self.items.all()])
+        self.save()
+
+class OrderItem(BaseModel):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    store_item = models.ForeignKey(StoreItem, on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=15, decimal_places=0)
+
+    class Meta:
+        unique_together = ('order', 'store_item')
+
+    @property
+    def total_price(self):
+        return self.quantity * self.price
