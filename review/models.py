@@ -16,3 +16,7 @@ class Review(BaseModel):
     rating = models.PositiveSmallIntegerField(choices=Rating.choices)
     text = models.TextField(blank=True, null=True)
     is_approved = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("user", "product")
+        ordering = ["-created_at"]
