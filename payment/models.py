@@ -21,3 +21,5 @@ class CartItem(BaseModel):
     def total_price(self):
         return self.quantity * self.store_item.price
     
+    def __str__(self):
+        return f'{self.quantity} * {self.store_item.name}'
