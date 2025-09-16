@@ -16,3 +16,8 @@ class CartItem(BaseModel):
 
     class Meta:
         unique_together = ('cart', 'store_item')
+
+    @property
+    def total_price(self):
+        return self.quantity * self.store_item.price
+    
