@@ -1,3 +1,11 @@
 from django.db import models
+from core.models import BaseModel
+from accounts.models import User
+from seller.models import Store
 
-# Create your models here.
+class Cart(BaseModel):
+    user = models.OneToOneField(User, on_delete= models.CASCADE, related_name='cart')
+    is_active = models.BooleanField(default=True)
+    def total_price(self):
+        return sum([item.total_price for item in self.items.all()])
+    
