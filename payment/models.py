@@ -14,4 +14,5 @@ class Payment(BaseModel):
     paid_at = models.DateField(null=True, blank=True)
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
 
-    
+    def __str__(self):
+        return f'Payment for Order #{self.orders.id} - {self.status}'
