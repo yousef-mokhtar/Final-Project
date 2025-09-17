@@ -23,3 +23,10 @@ class ProductSerializer(serializers.ModelSerializer):
         if not data.get('name') or not data.get('description'):
             raise serializers.ValidationError('نام و توضیحات محصول الزامی است.')
         return data
+    
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image', 'alt_text']
+        read_only_fields = ['id']
