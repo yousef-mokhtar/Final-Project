@@ -12,4 +12,10 @@ class OrderSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('آدرس ارسال الزامی است.')
         return data
     
-    
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    total_price = serializers.ReadOnlyField()
+
+    class Meta:
+        fields = ['id', 'store_item', 'quantity', 'price', 'total_price']
+        read_only_fields = ['id', 'price', 'total_price']
