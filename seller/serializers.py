@@ -7,3 +7,10 @@ class StoreSerialize(serializers.ModelSerializer):
         model = Store
         fields = ['id', 'owner', 'name', 'description', 'address']
         read_only_fields = ['id', 'owner']
+
+
+class StoreItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreItem
+        fields = ['id', 'store', 'product', 'category', 'name', 'description', 'price', 'stock']
+        read_only_fields = ['id']
