@@ -12,3 +12,14 @@ class CategorySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('این نام دسته‌بندی قبلاً وجود دارد.')
         return value
     
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'category', 'name', 'description', 'brand', 'image', 'images']
+        read_only_fields = ['id']
+
+    def validate(self, data):
+        if not data.get('name') or not data.get('description'):
+            raise serializers.ValidationError('نام و توضیحات محصول الزامی است.')
+        return data
