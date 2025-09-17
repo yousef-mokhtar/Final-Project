@@ -1,6 +1,15 @@
 from rest_framework import serializers
 from .models import Order, OrderItem, Invoice
 
+class OrderItemSerializer(serializers.ModelSerializer):
+    total_price = serializers.ReadOnlyField()
+
+    class Meta:
+        mdoel = OrderItem
+        fields = ['id', 'store_item', 'quantity', 'price', 'total_price']
+        read_only_fields = ['id', 'price', 'total_price']
+
+
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.ReadOnlyField()
@@ -14,12 +23,3 @@ class OrderSerializer(serializers.ModelSerializer):
         if not data.get('shipping_address'):
             raise serializers.ValidationError('آدرس ارسال الزامی است.')
         return data
-    
-
-class OrderItemSerializer(serializers.ModelSerializer):
-    total_price = serializers.ReadOnlyField()
-
-    class Meta:
-        mdoel = OrderItem
-        fields = ['id', 'store_item', 'quantity', 'price', 'total_price']
-        read_only_fields = ['id', 'price', 'total_price']
