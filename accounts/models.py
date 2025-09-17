@@ -7,16 +7,7 @@ class User(AbstractUser, BaseModel):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=11, unique=True)
     is_verified = models.BooleanField(default=False)
-    groups = models.ManyToManyField(
-        Group,
-        blank=True,
-        related_name="custom_user_set", 
-    )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        blank=True,
-        related_name="custom_user_permissions",
-    )
+
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "phone"]

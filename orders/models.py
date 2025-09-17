@@ -35,3 +35,25 @@ class OrderItem(BaseModel):
     @property
     def total_price(self):
         return self.quantity * self.price
+
+class Invoice(BaseModel):
+    class Status(models.TextChoices):
+        UNPAID = "unpaid", "Unpaid"
+        PAID = "paid", "Paid"
+        CANCELED = "canceled", "Canceled"
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='invoice')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoices')
+    invoices_number = models.CharField(max_length=20, unique=True)
+    amount = models.DecimalField(max_digits=15, decimal_places=0)
+    tax = models.DecimalField(max_digits=15, decimal_places=0, default=0)
+    discount = models.DecimalField(max_digits=15, decimal_places=0,default=0)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.UNPAID)
+    issued_at = models.DateTimeField(auto_now_add=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f'Invoice {self.invoices_number} - {self.user.email}'
+    
+    def final_amount(self):
+        self.amount = self.order.total_price + self.tax - self.discount
+        return self.amount
