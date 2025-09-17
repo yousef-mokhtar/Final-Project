@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Cart, CartItem
+from seller.serializers import StoreItemSerializer
 
 class Cartsrializer(serializers.ModelSerializer):
 
@@ -10,4 +11,10 @@ class Cartsrializer(serializers.ModelSerializer):
 
 
 class CartItemSerializer(serializers.ModelSerializer):
-    pass
+    store_item = StoreItemSerializer(read_only=True)
+    total_price = serializers.ReadOnlyField(many=True)
+
+    class Meta:
+        model = CartItem
+        fields = ['id', 'store_item', 'quantity', 'total_price']
+        read_only_fields = ['id', 'total_price']
