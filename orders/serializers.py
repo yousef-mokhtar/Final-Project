@@ -17,5 +17,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
     total_price = serializers.ReadOnlyField()
 
     class Meta:
+        mdoel = OrderItem
         fields = ['id', 'store_item', 'quantity', 'price', 'total_price']
         read_only_fields = ['id', 'price', 'total_price']
