@@ -2,6 +2,9 @@ from rest_framework import serializers
 from .models import Order, OrderItem, Invoice
 
 class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+    total_price = serializers.ReadOnlyField()
+    
     class Meta:
         model = Order
         fields = ['id', 'user', 'shipping_address', 'total_price', 'status', 'is_paid', 'paid_at', 'items']
