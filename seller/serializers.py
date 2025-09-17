@@ -14,3 +14,9 @@ class StoreItemSerializer(serializers.ModelSerializer):
         model = StoreItem
         fields = ['id', 'store', 'product', 'category', 'name', 'description', 'price', 'stock']
         read_only_fields = ['id']
+
+
+    def validate_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError('مبلغ پرداخت باید مثبت باشد.')
+        return value
