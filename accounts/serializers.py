@@ -21,3 +21,18 @@ class UserSerializer(serializers.ModelSerializer):
             "unique": "این شماره تلفن قبلاً ثبت شده است.",
         },
     )
+
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+            model = Address
+            fields = ['id', 'title', 'province', 'city', 'postal_code', 'address_line', 'is_default']
+            read_only_fields = ['id', 'user']
+    
+    def validate(self, attrs):
+        user = self.context['request'].user
+        if attrs.get('is_default'):
+            Address.objects.filter(user=user, is_default=True).update(is_default=False)
+        return attrs
+    
