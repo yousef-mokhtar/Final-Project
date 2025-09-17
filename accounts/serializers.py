@@ -36,3 +36,7 @@ class AddressSerializer(serializers.ModelSerializer):
             Address.objects.filter(user=user, is_default=True).update(is_default=False)
         return attrs
     
+
+class OTPCodeSerilizer(serializers.ModelSerializer):
+    class Meta:
+        model = OTPCode
