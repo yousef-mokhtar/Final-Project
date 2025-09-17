@@ -23,3 +23,12 @@ class OrderSerializer(serializers.ModelSerializer):
         if not data.get('shipping_address'):
             raise serializers.ValidationError('آدرس ارسال الزامی است.')
         return data
+   
+    
+class InvoiceSerializer(serializers.ModelSerializer):
+    final_amount = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Invoice
+        fields = ['id', 'order', 'user', 'invoices_number', 'amount', 'tax', 'discount', 'status', 'issued_at', 'paid_at', 'final_amount']
+        read_only_fields = ['id', 'order', 'user', 'invoices_number', 'amount', 'issued_at', 'paid_at', 'final_amount']
