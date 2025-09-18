@@ -28,6 +28,14 @@ class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_object(self):
+        return self.request.user
+
+    def perform_destroy(self, instance):
+        instance.is_deleted = True
+        instance.is_active = False
+        instance.save()
+
 
 class AddressViewSet(viewsets.ModelViewSet):
     serializer_class = AddressSerializer
