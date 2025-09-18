@@ -31,6 +31,7 @@ class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
     def get_object(self):
         return self.request.user
 
+    # Soft delete
     def perform_destroy(self, instance):
         instance.is_deleted = True
         instance.is_active = False
@@ -41,4 +42,13 @@ class AddressViewSet(viewsets.ModelViewSet):
     serializer_class = AddressSerializer
     permission_classes = [IsAuthenticated]
 
-    
+    def get_queryset(self):
+        return Address.objects.filter(user=self.request.user, is_deleted=False)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    # Soft delete
+    def perform_destroy(self, instance):
+        instance.is_deleted = True
+        instance.save()
