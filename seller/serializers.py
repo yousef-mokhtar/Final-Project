@@ -17,7 +17,7 @@ class StoreItemSerializer(serializers.ModelSerializer):
 
     def validate_price(self, value):
         if value <= 0:
-            raise serializers.ValidationError('مبلغ پرداخت باید مثبت باشد.')
+            raise serializers.ValidationError('قیمت محصول باید مثبت باشد.')
         return value
     
     def validate_stock(self, value):
