@@ -26,4 +26,3 @@ class OTPCode(BaseModel):
     code = models.CharField(max_length=6)
     expiration_time = models.DateTimeField()
     is_verified = models.BooleanField(default=False)
-
