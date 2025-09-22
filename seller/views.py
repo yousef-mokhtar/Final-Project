@@ -11,3 +11,12 @@ class RegisterAsSellerView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+
+class MyStoreView(generics.RetrieveUpdateAPIView):
+    serializer_class = StoreSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return Store.objects.get(owner=self.request.user, is_deleted=False)
+    
+
