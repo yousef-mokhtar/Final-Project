@@ -22,4 +22,6 @@ class CheckoutView(generics.CreateAPIView):
         for item in cart.items.filter(is_deleted=False):
             OrderItem.objects.create(order=order,  store_item = item.store_item, quantity=item.quantity, price=item.store_item.price)
             order.calculate_total()
-            
+            Invoice.objects.create(order=order, user=self.request.user, invoices_number=f'INV-{order.id}', amount=order.total_price)
+            cart.is_active = False
+            cart.save()
