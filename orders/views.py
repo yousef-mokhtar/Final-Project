@@ -12,3 +12,14 @@ class MyOrderView(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user, is_deleted=False)
     
+class CheckoutView(generics.CreateAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        cart = Cart.objects.get(user=self.request.user, is_active=True, is_deleted=False)
+        order = serializer.save(user=self.request.user)
+        for item in cart.items.filter(is_deleted=False):
+            OrderItem.objects.create(order=order,  store_item = item.store_item, quantity=item.quantity, price=item.store_item.price)
+            order.calculate_total()
+            
