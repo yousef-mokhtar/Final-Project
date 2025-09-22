@@ -2,9 +2,10 @@ from rest_framework import serializers
 from .models import Review
 
 class ReviewSerializer(serializers.ModelSerializer):
-    model = Review
-    fields = ['id', 'user', 'product', 'rating', 'text', 'is_approved']
-    read_only_fields = ['id', 'user', 'is_approved']
+    class Meta:
+        model = Review
+        fields = ['id', 'user', 'product', 'rating', 'text', 'is_approved']
+        read_only_fields = ['id', 'user', 'is_approved']
     
     def validate_rating(self, value):
         if value < 1 or value > 5:
