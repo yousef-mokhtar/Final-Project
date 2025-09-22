@@ -20,3 +20,13 @@ class MyStoreView(generics.RetrieveUpdateAPIView):
         return Store.objects.get(owner=self.request.user, is_deleted=False)
     
 
+class StoreItemViewSet(viewsets.ModelViewSet):
+    serializer_class = StoreItem
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return StoreItem.objects.filter(store__owner=self.request.user, is_deleted=False)
+    
+    def perform_destroy(self, instance):
+        instance.is_deleted = True
+        instance.save()
