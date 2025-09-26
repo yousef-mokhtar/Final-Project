@@ -168,7 +168,7 @@ CELERY_RESULT_SERIALIZER = "json"
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{config('REDIS_HOST', 'redis')}:{config('REDIS_PORT', '6379')}/1",
+        "LOCATION": f"redis://{os.getenv('REDIS_HOST', '127.0.0.1')}:{os.getenv('REDIS_PORT', '6379')}/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
