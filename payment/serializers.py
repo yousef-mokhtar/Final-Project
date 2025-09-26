@@ -14,7 +14,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         order = data.get('orders')
-        if order and order.is_paid:
+        if order and order.is_paid: # گذاشتن اوردر برای رفع AttributeError
             raise serializers.ValidationError('این سفارش قبلاً پرداخت شده است.')
         return data
     
