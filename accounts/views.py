@@ -10,6 +10,7 @@ from accounts.tasks import send_otp_code
 from .models import OTPCode, User, Address
 from .serializers import UserSerializer, AddressSerializer, OTPCodeRequestSerilizer, OTPCodeVerifySerializer
 from .utils import save_otp, verify_otp
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 
 class RegisterView(generics.CreateAPIView):
@@ -59,8 +60,8 @@ class AddressViewSet(viewsets.ModelViewSet):
         instance.save()
 
 class OTPRequestView(generics.GenericAPIView):
-    serializer_class = OTPCodeSerilizer
-    permission_classes = [IsAuthenticated]
+    serializer_class = OTPCodeRequestSerilizer
+    permission_classes = [AllowAny]  # برای ثبت‌نام نیازی به لاگین نیست
 
     def post(self, request):
         user = request.user
@@ -85,12 +86,35 @@ class OTPVerifyView(generics.GenericAPIView):
     serializer_class = OTPCodeVerifySerializer
     permission_classes = [AllowAny]
 
+    @extend_schema(  # برای Swagger
+        summary="Verify OTP code",
+        description="Verifies the OTP code and marks the user as verified."
+    )
+
     def post(self, request, *args, **kwargs):
         # دریافت داده‌ها از درخواست
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        phone_number = serializer.validated_data['phone_number']
-        otp_code = serializer.validated_data['otp_code']
-        if verify_otp(phone=phone_number,otp=otp_code):
-            request.user.is_verified = True
+        phone = serializer.validated_data['phone']
+        code = serializer.validated_data['code']
+
+        if verify_otp(phone=phone, otp=code):
+            try:
+                user = User.objects.get(phone=phone, is_deleted=False)
+                user.is_verified = True
+                user.save()
+                return Response(
+                    {'message': 'کد OTP تأیید شد و کاربر تأیید شد.'},
+                    status=status.HTTP_200_OK
+                )
+            except User.DoesNotExist:
+                return Response(
+                    {'error': 'کاربری با این شماره تلفن یافت نشد.'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        else:
+            return Response(
+                {'error': 'کد OTP نامعتبر یا منقضی شده است.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
