@@ -21,8 +21,8 @@ class Address(BaseModel):
     address_line = models.TextField()
     is_default = models.BooleanField(default=False)
 
-class OTPCode(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    code = models.CharField(max_length=6)
-    expiration_time = models.DateTimeField()
-    is_verified = models.BooleanField(default=False)
+# class OTPCode(BaseModel):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#     code = models.CharField(max_length=6)
+#     expiration_time = models.DateTimeField()
+#     is_verified = models.BooleanField(default=False)
