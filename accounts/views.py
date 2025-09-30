@@ -18,6 +18,18 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save(is_verified=False)  # کاربر ثبت می‌شه ولی تأیید نشده
+        code = str(random.randint(100000, 999999))
+        save_otp(phone=user.phone, otp=code)
+        send_otp_code.delay(user.id, code, recipient_email=user.email)
+        return Response({
+            'message': f'کاربر ثبت شد. کد OTP به {user.email} ارسال شد.',
+            'user_id': user.id
+        }, status=status.HTTP_201_CREATED)
+
 
 class LoginView(TokenObtainPairView):
     pass
@@ -42,6 +54,8 @@ class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
         instance.is_deleted = True
         instance.is_active = False
         instance.save()
+
+    
 
 
 class AddressViewSet(viewsets.ModelViewSet):
