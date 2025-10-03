@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Address, OTPCode
+from .models import User, Address
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 
@@ -17,8 +17,8 @@ class AddressAdmin(admin.ModelAdmin):
     list_filter = ('province', 'city', 'is_default')
     search_fields = ('user__email', 'title', 'city', 'province', 'postal_code')
 
-@admin.register(OTPCode)
-class OTPCodeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'code', 'expiration_time', 'is_verified')
-    list_filter = ('is_verified',)
-    search_fields = ('user__email', 'code')
+# @admin.register(OTPCode)
+# class OTPCodeAdmin(admin.ModelAdmin):
+#     list_display = ('user', 'code', 'expiration_time', 'is_verified')
+#     list_filter = ('is_verified',)
+#     search_fields = ('user__email', 'code')
