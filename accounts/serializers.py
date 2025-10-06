@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Address, OTPCode
+from .models import User, Address
 from rest_framework_simplejwt.serializers import TokenObtainSerializer
 
 class UserSerializer(serializers.ModelSerializer):
@@ -34,12 +34,19 @@ class AddressSerializer(serializers.ModelSerializer):
             Address.objects.filter(user=user, is_default=True).update(is_default=False) # خاموش کردن آدرس های پیش فرض قبلی
         return attrs
     
-class OTPCodeRequestSerilizer(serializers.Serializer):
-    # class Meta:
-    #     model = OTPCode
-
-    # اینجا این باید تکمیل بشه 
-    email = serializers.CharField(max_length=25)
+class OTPCodeRequestSerializer(serializers.Serializer):
+    phone = serializers.CharField(
+        max_length=11,
+        min_length=11,
+        error_messages={
+            "min_length": "شماره تلفن باید 11 رقمی باشد.",
+            "max_length": "شماره تلفن باید 11 رقمی باشد."
+        }
+    )
+    email = serializers.EmailField(
+        required=False,
+        error_messages={"invalid": "ایمیل معتبر وارد کنید."}
+    )
 
 class OTPCodeVerifySerializer(serializers.Serializer):
     code = serializers.CharField(
