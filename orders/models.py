@@ -57,3 +57,19 @@ class Invoice(BaseModel):
     def final_amount(self):
         self.amount = self.order.total_price + self.tax - self.discount
         return self.amount
+
+class Payment(BaseModel):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        SUCCESS = "success", "Success"
+        FAILED = "failed", "Failed"
+    
+    orders = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment')
+    amount = models.DecimalField(max_digits=15, decimal_places=0)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    transaction_id = models.CharField(max_length=100, null=True, blank=True)
+    gateway_response = models.JSONField(null=True, blank=True)
+
+    def __str__(self):
+        return f'Payment for Order #{self.orders.id} - {self.status}'

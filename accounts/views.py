@@ -1,14 +1,13 @@
 from datetime import timedelta, timezone
 import random
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404 
 from rest_framework import generics, viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
 from accounts.tasks import send_otp_code
-from .models import OTPCode, User, Address
-from .serializers import UserSerializer, AddressSerializer, OTPCodeRequestSerilizer, OTPCodeVerifySerializer
+from .models import User, Address
+from .serializers import UserSerializer, AddressSerializer, OTPCodeRequestSerializer, OTPCodeVerifySerializer
 from .utils import save_otp, verify_otp
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
@@ -22,18 +21,16 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save(is_verified=False)  # کاربر ثبت می‌شه ولی تأیید نشده
-        code = str(random.randint(100000, 999999))
-        save_otp(phone=user.phone, otp=code)
-        send_otp_code.delay(user.id, code, recipient_email=user.email)
         return Response({
-            'message': f'کاربر ثبت شد. کد OTP به {user.email} ارسال شد.',
-            'user_id': user.id
+            'message': f'کاربر با موفقیت ثبت شد. لطفاً کد OTP را از طریق /api/accounts/otp/request/ درخواست کنید.',
+            'user_id': user.id,
+            'email': user.email,
+            'phone': user.phone
         }, status=status.HTTP_201_CREATED)
 
 
 class LoginView(TokenObtainPairView):
     pass
-
 
 class TokenRefresh(TokenRefreshView):
     pass
@@ -73,21 +70,31 @@ class AddressViewSet(viewsets.ModelViewSet):
         instance.is_deleted = True
         instance.save()
 
+
 class OTPRequestView(generics.GenericAPIView):
-    serializer_class = OTPCodeRequestSerilizer
-    permission_classes = [AllowAny]  # برای ثبت‌نام نیازی به لاگین نیست
+    serializer_class = OTPCodeRequestSerializer
+    permission_classes = [AllowAny]
 
     def post(self, request):
-        user = request.user
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+
+        user = get_object_or_404(User, username=username)
+        phone = user.phone
+
+        if not phone:
+            return Response(
+                {'error': 'کاربر شماره تلفن ثبت شده‌ای ندارد.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         code = str(random.randint(100000, 999999))
-        # expiration_time = timezone.now() + timedelta(minutes=5)
-        save_otp(phone=user.phone, otp=code)
-        # otp = OTPCode.objects.create(user=user, code=code, expiration_time=expiration_time)
+        save_otp(phone=phone, otp=code)
 
         send_otp_code.delay(user.id, code)
-        return Response({'message': 'کد OTP ارسال شد.'}, status=status.HTTP_200_OK)
 
+        return Response({'message': f'کد OTP به شماره {phone} ارسال شد.'}, status=status.HTTP_200_OK)
 
 class OTPVerifyView(generics.GenericAPIView):
 

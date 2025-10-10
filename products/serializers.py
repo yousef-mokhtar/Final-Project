@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from django.db.models import Avg, Sum, Min
+from seller.models import StoreItem
 from .models import Category, Product, ProductImage
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -21,15 +23,35 @@ class ProductImageSerializer(serializers.ModelSerializer):
     
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    image = ProductImageSerializer(many=True, read_only=True)
+    images = ProductImageSerializer(many=True, read_only=True)
+    
+    rating = serializers.SerializerMethodField()
+    stock = serializers.SerializerMethodField()
+    best_price = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'category', 'name', 'description', 'brand', 'image', 'images']
-        read_only_fields = ['id']
+        fields = [
+            'id', 
+            'category', 
+            'name', 
+            'description', 
+            'brand', 
+            'image',
+            'images',
+            'rating',     
+            'stock',       
+            'best_price',  
+        ]
 
-    def validate(self, data):
-        if not data.get('name') or not data.get('description'):
-            raise serializers.ValidationError('نام و توضیحات محصول الزامی است.')
-        return data
+    def get_rating(self, obj):
+        avg_rating = obj.product_reviews.filter(is_approved=True).aggregate(avg_rating=Avg('rating'))['avg_rating']
+        return avg_rating if avg_rating is not None else 0
+
+    def get_stock(self, obj):
+        total_stock = StoreItem.objects.filter(product=obj, is_active=True).aggregate(total_stock=Sum('stock'))['total_stock']
+        return total_stock if total_stock is not None else 0
+
+    def get_best_price(self, obj):
+        min_price = StoreItem.objects.filter(product=obj, is_active=True).aggregate(min_price=Min('price'))['min_price']
+        return min_price
