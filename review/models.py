@@ -11,8 +11,8 @@ class Review(BaseModel):
         FOUR = 4, "4"
         FIVE = 5, "5"
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_reviews")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_reviews")
     rating = models.PositiveSmallIntegerField(choices=Rating.choices)
     text = models.TextField(blank=True, null=True)
     is_approved = models.BooleanField(default=False)
