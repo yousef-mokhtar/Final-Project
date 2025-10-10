@@ -20,13 +20,8 @@ from django.urls import path
 from .views import RegisterView, OTPRequestView, OTPVerifyView
 
 urlpatterns = [
-    # api/accounts/register/
     path('register/', RegisterView.as_view(), name='register'),
-    
-    # api/accounts/request-otp/
     path('request-otp/', OTPRequestView.as_view(), name='otp-request'),
-    
-    # api/accounts/verify-otp/
     path('verify-otp/', OTPVerifyView.as_view(), name='otp-verify'),
 ]
 
