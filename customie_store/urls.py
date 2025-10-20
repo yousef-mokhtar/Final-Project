@@ -33,7 +33,7 @@ urlpatterns = [
     path('api/orders/', include('orders.urls')),
     path('api/orders/payments/', include('orders.urls_payment')),
     path('api/products/', include('products.urls')),
-    path('api/seller/', include('seller.urls')),
+    path('api/mystore/', include('seller.urls')),
     path('api/cart/', include('cart.urls')),
     path('api/review/', include('review.urls')),
     path('admin/', custom_admin_site.urls),
