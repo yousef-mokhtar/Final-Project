@@ -1,29 +1,29 @@
-# from django.urls import path
-# from .views import UserProfileView, RegisterView, OTPRequestView, OTPVerifyView, AddressViewSet
-# from seller.views import RegisterAsSellerView
-# from rest_framework.routers import DefaultRouter
-
-# router = DefaultRouter()
-# router.register(r'addresses', AddressViewSet, basename='address')
-
-# urlpatterns = [
-#     path('register/', RegisterView.as_view(), name='register'),
-#     path('profile/', UserProfileView.as_view(), name='profile'), # قبلی
-#     path('myuser/', UserProfileView.as_view(), name='myuser'), # جدید
-#     path('otp/request/', OTPRequestView.as_view(), name='otp-request'),
-#     path('otp/verify/', OTPVerifyView.as_view(), name='verify-otp'),
-#     path('myuser/register_as_seller/', RegisterAsSellerView.as_view(), name='register_as_seller'), # این یکی الان مطابق لیست دوست هست
-# ] + router.urls
-
-
 from django.urls import path
-from .views import RegisterView, OTPRequestView, OTPVerifyView
+from .views import UserProfileView, RegisterView, OTPRequestView, OTPVerifyView, AddressViewSet
+from seller.views import RegisterAsSellerView
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'addresses', AddressViewSet, basename='address')
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
-    path('request-otp/', OTPRequestView.as_view(), name='otp-request'),
-    path('verify-otp/', OTPVerifyView.as_view(), name='otp-verify'),
-]
+    path('profile/', UserProfileView.as_view(), name='profile'), # قبلی
+    path('myuser/', UserProfileView.as_view(), name='myuser'), # جدید
+    path('otp/request/', OTPRequestView.as_view(), name='otp-request'),
+    path('otp/verify/', OTPVerifyView.as_view(), name='verify-otp'),
+    path('myuser/register_as_seller/', RegisterAsSellerView.as_view(), name='register_as_seller'), # این یکی الان مطابق لیست دوست هست
+] + router.urls
+
+
+# from django.urls import path
+# from .views import RegisterView, OTPRequestView, OTPVerifyView
+
+# urlpatterns = [
+#     path('register/', RegisterView.as_view(), name='register'),
+#     path('request-otp/', OTPRequestView.as_view(), name='otp-request'),
+#     path('verify-otp/', OTPVerifyView.as_view(), name='otp-verify'),
+# ]
 
 
 
