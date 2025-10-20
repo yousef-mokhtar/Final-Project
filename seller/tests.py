@@ -2,7 +2,6 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from accounts.models import User
 from .models import Store
-from .serializers import StoreSerializer
 
 class SellerTest(APITestCase):
     
@@ -17,20 +16,28 @@ class SellerTest(APITestCase):
         self.client.force_authenticate(user=self.user)
     
     def test_register_as_seller(self):
+        """
+        تست می‌کند که آیا کاربر می‌تواند با موفقیت یک فروشگاه ثبت کند یا نه.
+        """
         data = {
             'name': 'فروشگاه تست',
-            'description': 'توضیحات',
-            'address': 'آدرس تست'
+            'description': 'توضیحات تست برای فروشگاه جدید',
         }
-        response = self.client.post('/api/seller/register/', data)
+        response = self.client.post('/api/myuser/register_as_seller/', data)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Store.objects.count(), 1)
         store = Store.objects.first()
         self.assertEqual(store.name, 'فروشگاه تست')
         self.assertEqual(store.owner, self.user)
     
-    def test_my_store(self):
-        store = Store.objects.create(owner=self.user, name='فروشگاه من', description='توضیحات', address='آدرس')
-        response = self.client.get('/api/seller/my-store/')
+    def test_my_store_retrieve(self):
+        """
+        تست می‌کند که آیا فروشنده می‌تواند اطلاعات فروشگاه خود را مشاهده کند.
+        """
+        Store.objects.create(owner=self.user, name='فروشگاه من', description='توضیحات')
+        
+        response = self.client.get('/api/mystore/')
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'فروشگاه من')
