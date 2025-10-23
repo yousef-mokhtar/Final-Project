@@ -39,6 +39,7 @@ ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'jazzmin',
+    'accounts.apps.AccountsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,7 +48,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'orders.apps.OrdersConfig',
     'core.apps.CoreConfig',
-    'accounts.apps.AccountsConfig',
     'cart.apps.CartConfig',
     'review.apps.ReviewConfig',
     'seller.apps.SellerConfig',
@@ -61,6 +61,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
@@ -96,8 +97,12 @@ WSGI_APPLICATION = 'customie_store.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / "db.sqlite3",
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.getenv('DB_NAME', BASE_DIR / 'db.sqlite3'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASS'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -197,37 +202,26 @@ ZARINPAL_MERCHANT_ID = os.getenv('ZARINPAL_MERCHANT_ID')
 
 
 
-# settings.py
-
-# ... (بقیه تنظیمات)
-
-# === Jazzmin Admin Theme Settings ===
 JAZZMIN_SETTINGS = {
-    # === عنوان و برندینگ ===
     "site_title": "استور، کاستومی",
     "site_header": "استور، کاستومی",
     "site_brand": "استور، کاستومی",
-    "site_logo": "logo-type.svg", # برای بعداً - الان None
-    # "login_logo": "logo_login.png", # برای بعداً - الان None
+    "site_logo": "logo-type.svg", 
     "login_logo": None,
     "login_logo_dark": None,
     "site_logo_classes": "img-rounded",
-    # "site_icon": "favicon.ico", # برای بعداً - الان None
     "site_icon": None,
     "welcome_sign": "به پنل مدیریت استور، کاستومی خوش آمدید",
     "copyright": "استور، کاستومی - ۱۴۰۴",
 
-    # === سرچ‌بار ===
     "search_model": [
         "accounts.User",
         "products.Product",
         "orders.Order",
     ],
 
-    # === آواتار کاربر (در صورت وجود) ===
     "user_avatar": None,
 
-    # === منوی بالایی ===
     "topmenu_links": [
         {"name": "خانه", "url": "admin:index", "permissions": ["auth.view_user"]},
         {"name": "مستندات", "url": "https://github.com/farridav/django-jazzmin", "new_window": True},
@@ -235,20 +229,17 @@ JAZZMIN_SETTINGS = {
         {"app": "products"},
     ],
 
-    # === منوی کاربر ===
     "usermenu_links": [
         {"name": "پروفایل", "url": "admin:accounts_user_change", "parameters": "request.user.pk"},
         {"name": "پشتیبانی", "url": "https://github.com/farridav/django-jazzmin/issues", "new_window": True},
         {"model": "auth.user"},
     ],
 
-    # === منوی سمت چپ ===
     "show_sidebar": True,
     "navigation_expanded": True,
     "hide_apps": [],
     "hide_models": [],
 
-    # === ترتیب نمایش اپ‌ها و مدل‌ها ===
     "order_with_respect_to": [
         "accounts", "accounts.user", "accounts.address",
         "products", "products.category", "products.product", "products.productimage",
@@ -258,7 +249,6 @@ JAZZMIN_SETTINGS = {
         "review", "review.review",
     ],
 
-    # === لینک‌های سفارشی (اختیاری) ===
     "custom_links": {
         # مثال:
         # "products": [{
@@ -269,7 +259,6 @@ JAZZMIN_SETTINGS = {
         # }]
     },
 
-    # === آیکون‌ها ===
     "icons": {
         "accounts": "fas fa-users-cog",
         "accounts.user": "fas fa-user",
@@ -301,7 +290,6 @@ JAZZMIN_SETTINGS = {
     "default_icon_parents": "fas fa-chevron-circle-right",
     "default_icon_children": "fas fa-circle",
 
-    # === سایر تنظیمات ===
     "related_modal_active": False,
     "custom_css": None,
     "custom_js": None,
@@ -336,3 +324,6 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
