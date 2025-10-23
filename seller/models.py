@@ -27,10 +27,16 @@ class StoreAddress(BaseModel):
 class StoreItem(BaseModel):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100) 
-    description = models.TextField(blank=True, null=True)
+    # name = models.CharField(max_length=100)
+    # description = models.TextField(blank=True, null=True) 
     price = models.DecimalField(max_digits=10, decimal_places=0)
     stock = models.PositiveIntegerField(default=0)
-
+    discount_price = models.DecimalField(
+        max_digits=10, 
+        decimal_places=0, 
+        null=True, 
+        blank=True,
+        help_text="قیمت پس از تخفیف (در صورت وجود). اگر خالی باشد، قیمت اصلی محاسبه می‌شود."
+    )
     def __str__(self):
         return f"{self.product.name} in {self.store.name}"

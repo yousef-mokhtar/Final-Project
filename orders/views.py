@@ -9,9 +9,10 @@ from .models import Order, OrderItem, Invoice, Payment
 from .serializers import OrderSerializer, InvoiceSerializer, PaymentSerializer
 from cart.models import Cart
 import requests
+from .tasks import send_payment_success_email
 
 MERCHANT_ID = settings.ZARINPAL_MERCHANT_ID
-ZP_API_REQUEST = "https://sandbox.zarinpal.com/pg/v4/payment/request.json"  # sandbox
+ZP_API_REQUEST = "https://sandbox.zarinpal.com/pg/v4/payment/request.json"
 ZP_API_VERIFY = "https://sandbox.zarinpal.com/pg/v4/payment/verify.json"
 ZP_API_STARTPAY = "https://sandbox.zarinpal.com/pg/StartPay/"
 CALLBACK_URL = "http://127.0.0.1:8000/api/orders/verify/"
@@ -27,11 +28,22 @@ class CheckoutView(generics.CreateAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
         cart = Cart.objects.get(user=self.request.user, is_active=True, is_deleted=False)
         order = serializer.save(user=self.request.user)
+        
         for item in cart.items.filter(is_deleted=False):
-            OrderItem.objects.create(order=order, store_item=item.store_item, quantity=item.quantity, price=item.store_item.price)
+            unit_price = item.total_price / item.quantity
+            OrderItem.objects.create(
+                order=order, 
+                store_item=item.store_item, 
+                quantity=item.quantity, 
+                price=unit_price
+            )
+            
         order.calculate_total()
         Invoice.objects.create(order=order, user=self.request.user, invoices_number=f'INV-{order.id}', amount=order.total_price)
         
@@ -46,7 +58,8 @@ class CheckoutView(generics.CreateAPIView):
         headers = {"accept": "application/json", "content-type": "application/json"}
         res = requests.post(ZP_API_REQUEST, json=data, headers=headers)
         res_json = res.json()
-        if res_json.get('data', {}).get('code') == 100:
+
+        if res.status_code == 200 and res_json.get('data', {}).get('code') == 100:
             authority = res_json['data']['authority']
             payment.transaction_id = authority
             payment.gateway_response = res_json
@@ -55,8 +68,8 @@ class CheckoutView(generics.CreateAPIView):
             cart.save()
             return Response({"payment_url": ZP_API_STARTPAY + authority}, status=status.HTTP_200_OK)
         else:
+            order.delete() 
             return Response({"error": res_json.get('errors')}, status=status.HTTP_400_BAD_REQUEST)
-        
 
 class VerifyPaymentView(generics.GenericAPIView):
     permission_classes = [AllowAny]
@@ -64,9 +77,15 @@ class VerifyPaymentView(generics.GenericAPIView):
     def get(self, request):
         authority = request.GET.get("Authority")
         status = request.GET.get("Status")
-        payment = Payment.objects.get(transaction_id=authority)
+        
+        try:
+            payment = Payment.objects.get(transaction_id=authority)
+        except Payment.DoesNotExist:
+            return Response({"error": "تراکنش یافت نشد"}, status=status.HTTP_404_NOT_FOUND)
+
         order = payment.orders
         amount = int(payment.amount)
+
         if status == "OK":
             data = {
                 "merchant_id": MERCHANT_ID,
@@ -76,24 +95,30 @@ class VerifyPaymentView(generics.GenericAPIView):
             headers = {"accept": "application/json", "content-type": "application/json"}
             res = requests.post(ZP_API_VERIFY, json=data, headers=headers)
             res_json = res.json()
-            if res_json.get('data', {}).get('code') == 100:
+
+            if res.status_code == 200 and res_json.get('data', {}).get('code') == 100:
                 payment.status = Payment.Status.SUCCESS
                 payment.paid_at = timezone.now()
                 payment.gateway_response = res_json
                 payment.save()
+                
                 order.is_paid = True
                 order.status = Order.Status.PROCESSING
                 order.paid_at = timezone.now()
                 order.save()
+
+                send_payment_success_email.delay(order.id)
+                
                 return Response({"status": "success", "ref_id": res_json["data"]["ref_id"]})
             else:
                 payment.status = Payment.Status.FAILED
                 payment.gateway_response = res_json
                 payment.save()
-                return Response({"error": res_json["data"]["message"]})
+                return Response({"error": res_json.get('errors', {}).get('message', 'خطا در تایید پرداخت')})
         else:
             payment.status = Payment.Status.FAILED
             payment.save()
+            # return redirect("http://localhost:5173/payment/failed")
             return Response({"status": "canceled"})
 
 class AdminOrderViewSet(viewsets.ModelViewSet):

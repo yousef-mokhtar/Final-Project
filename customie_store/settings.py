@@ -39,7 +39,6 @@ ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'jazzmin',
-    'accounts.apps.AccountsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'orders.apps.OrdersConfig',
     'core.apps.CoreConfig',
+    'accounts.apps.AccountsConfig',
     'cart.apps.CartConfig',
     'review.apps.ReviewConfig',
     'seller.apps.SellerConfig',
