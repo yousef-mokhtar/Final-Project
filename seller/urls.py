@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from .views import MyStoreView, StoreItemViewSet, StoreAddressViewSet 
+from .views import MyStoreView, StoreItemViewSet, StoreAddressViewSet, StoreOrderItemViewSet
 
 router = DefaultRouter()
 router.register(r'items', StoreItemViewSet, basename='mystore-item')
