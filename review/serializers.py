@@ -5,7 +5,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'user', 'product', 'rating', 'text', 'is_approved']
-        read_only_fields = ['id', 'user', 'is_approved']
+        read_only_fields = ['id', 'user', 'is_approved', 'product']
     
     def validate_rating(self, value):
         if value < 1 or value > 5:
@@ -13,8 +13,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         return value
     
     def validate(self, data):
-            user = self.context['request'].user
-            product = data.get('product')
-            if Review.objects.filter(user=user, product=product).exists():
-                raise serializers.ValidationError("شما قبلاً برای این محصول نظر ثبت کرده‌اید.")
-            return data
+        user = self.context['request'].user
+        product_pk = self.context['view'].kwargs.get('product_pk')
+        if Review.objects.filter(user=user, product=product_pk).exists():
+            raise serializers.ValidationError("شما قبلاً برای این محصول نظر ثبت کرده‌اید.")
+        return data

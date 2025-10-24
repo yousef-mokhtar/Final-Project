@@ -28,8 +28,12 @@ class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        cart = Cart.objects.get(user=self.request.user, is_active=True, is_deleted=False)
+        cart, _ = Cart.objects.get_or_create(user=self.request.user, is_active=True)
         return cart.items.filter(is_deleted=False)
+
+    def perform_create(self, serializer):
+        cart, _ = Cart.objects.get_or_create(user=self.request.user, is_active=True)
+        serializer.save(cart=cart)
 
     def perform_destroy(self, instance):
         instance.is_deleted = True

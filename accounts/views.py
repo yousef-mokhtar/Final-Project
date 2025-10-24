@@ -10,6 +10,8 @@ from .models import User, Address
 from .serializers import UserSerializer, AddressSerializer, OTPCodeRequestSerializer, OTPCodeVerifySerializer
 from .utils import save_otp, verify_otp
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
+from rest_framework.response import Response
 
 
 class RegisterView(generics.CreateAPIView):
@@ -139,3 +141,11 @@ class OTPVerifyView(generics.GenericAPIView):
                 {'error': 'کد OTP نامعتبر یا منقضی شده است.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+class UserAdminViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet برای مدیریت کامل (CRUD) کاربران توسط ادمین.
+    """
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]

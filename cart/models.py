@@ -6,8 +6,9 @@ from seller.models import StoreItem
 class Cart(BaseModel):
     user = models.OneToOneField(User, on_delete= models.CASCADE, related_name='cart')
     is_active = models.BooleanField(default=True)
+
     def total_price(self):
-        return sum([item.total_price for item in self.items.all()])
+        return sum([item.total_price for item in self.items.filter(is_deleted=False)])
     
 class CartItem(BaseModel):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
@@ -19,7 +20,10 @@ class CartItem(BaseModel):
 
     @property
     def total_price(self):
+
+        if self.store_item.discount_price is not None:
+            return self.quantity * self.store_item.discount_price
         return self.quantity * self.store_item.price
     
     def __str__(self):
-        return f'{self.quantity} * {self.store_item.name}'
+        return f'{self.quantity} * {self.store_item.product.name}'
