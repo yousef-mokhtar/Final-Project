@@ -19,6 +19,16 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from core.admin import custom_admin_site
+from rest_framework_nested import routers
+from products.views import ProductViewSet
+from review.views import ReviewViewSet
+
+router = routers.DefaultRouter()
+router.register(r'products', ProductViewSet, basename='product')
+
+products_router = routers.NestedDefaultRouter(router, r'products', lookup='product')
+products_router.register(r'reviews', ReviewViewSet, basename='product-reviews')
+
 
 
 urlpatterns = [
@@ -32,13 +42,13 @@ urlpatterns = [
     path('api/accounts/', include('accounts.urls')),
     path('api/orders/', include('orders.urls')),
     path('api/orders/payments/', include('orders.urls_payment')),
-    path('api/products/', include('products.urls')),
-    path('api/seller/', include('seller.urls')),
+    path('api/mystore/', include('seller.urls')),
     path('api/cart/', include('cart.urls')),
-    path('api/review/', include('review.urls')),
+    path('api/', include(router.urls)),
+    path('api/', include(products_router.urls)),
     path('admin/', custom_admin_site.urls),
     path('api/myuser/', include('accounts.urls_myuser')),
     path('api/categories/', include('products.urls_category')),
     path('api/admin/', include('products.admin_urls')),
-
+    path('api/admin/', include('accounts.admin_urls')),
 ]

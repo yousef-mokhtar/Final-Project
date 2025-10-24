@@ -1,0 +1,22 @@
+/* static/your_app/admin_custom.css */
+.module h2, .module h3 {
+    /* این خط برای متن "استور، کاستوم" است */
+    font-size: 20px;
+    color: #007bff; /* یا رنگ دلخواه شما */
+}
+
+/* تغییر لوگوی ادمین */
+.branding a {
+    background-image: url("admin_logo.png") !important;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center left;
+    padding-left: 40px; /* این مقدار را بر اساس اندازه لوگوی خود تنظیم کنید */
+    width: auto; /* یا یک مقدار ثابت */
+    height: 50px; /* یا یک مقدار ثابت */
+}
+
+/* اگر می‌خواهید متن "Django administration" را هم پنهان کنید */
+.branding a span {
+    display: none;
+}

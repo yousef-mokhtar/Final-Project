@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Store, StoreItem
 from .serializers import StoreAddressSerializer, StoreSerializer, StoreItemSerializer
 from rest_framework.exceptions import PermissionDenied
-
+from orders.models import OrderItem
+from orders.serializers import OrderItemSerializer 
 
 class RegisterAsSellerView(generics.CreateAPIView):
     serializer_class = StoreSerializer
@@ -50,3 +51,17 @@ class StoreAddressViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         store = self.get_store_instance()
         serializer.save(store=store)
+
+class StoreOrderItemViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Viewset برای نمایش آیتم‌های سفارشی که مربوط به فروشگاه کاربر لاگین کرده است.
+    """
+    serializer_class = OrderItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not hasattr(user, 'store'):
+            return OrderItem.objects.none() 
+        
+        return OrderItem.objects.filter(store_item__store=user.store).order_by('-created_at')
