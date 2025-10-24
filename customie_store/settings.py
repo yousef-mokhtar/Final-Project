@@ -10,33 +10,53 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from logging import config
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Calling load_env
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-t9_kpgh5#5sekub-ijn258wd#*k2d1uste-#u=k-+ia6rnpr5_'
+SECRET_KEY = os.getenv("SECRET_KEY") 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'orders.apps.OrdersConfig',
+    'core.apps.CoreConfig',
+    'accounts.apps.AccountsConfig',
+    'cart.apps.CartConfig',
+    'review.apps.ReviewConfig',
+    'seller.apps.SellerConfig',
+    'products.apps.ProductsConfig',
+    'django_extensions',
+    'rest_framework',
+    'corsheaders',
+    'drf_spectacular',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +67,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'customie_store.urls'
@@ -75,9 +97,10 @@ WSGI_APPLICATION = 'customie_store.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
     }
 }
+
 
 
 # Password validation
@@ -114,9 +137,193 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'accounts.User'
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 10,
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Customie Store API",
+    "DESCRIPTION": "API documentation for Customie Store project",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": True,
+}
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{os.getenv('REDIS_HOST', '127.0.0.1')}:{os.getenv('REDIS_PORT', '6379')}/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+REDIS_DB = int(os.getenv("REDIS_DB", 0))
+
+
+ZARINPAL_MERCHANT_ID = os.getenv('ZARINPAL_MERCHANT_ID')
+
+
+
+# settings.py
+
+# ... (بقیه تنظیمات)
+
+# === Jazzmin Admin Theme Settings ===
+JAZZMIN_SETTINGS = {
+    # === عنوان و برندینگ ===
+    "site_title": "استور، کاستومی",
+    "site_header": "استور، کاستومی",
+    "site_brand": "استور، کاستومی",
+    "site_logo": "logo-type.svg", # برای بعداً - الان None
+    # "login_logo": "logo_login.png", # برای بعداً - الان None
+    "login_logo": None,
+    "login_logo_dark": None,
+    "site_logo_classes": "img-rounded",
+    # "site_icon": "favicon.ico", # برای بعداً - الان None
+    "site_icon": None,
+    "welcome_sign": "به پنل مدیریت استور، کاستومی خوش آمدید",
+    "copyright": "استور، کاستومی - ۱۴۰۴",
+
+    # === سرچ‌بار ===
+    "search_model": [
+        "accounts.User",
+        "products.Product",
+        "orders.Order",
+    ],
+
+    # === آواتار کاربر (در صورت وجود) ===
+    "user_avatar": None,
+
+    # === منوی بالایی ===
+    "topmenu_links": [
+        {"name": "خانه", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "مستندات", "url": "https://github.com/farridav/django-jazzmin", "new_window": True},
+        {"model": "accounts.User"},
+        {"app": "products"},
+    ],
+
+    # === منوی کاربر ===
+    "usermenu_links": [
+        {"name": "پروفایل", "url": "admin:accounts_user_change", "parameters": "request.user.pk"},
+        {"name": "پشتیبانی", "url": "https://github.com/farridav/django-jazzmin/issues", "new_window": True},
+        {"model": "auth.user"},
+    ],
+
+    # === منوی سمت چپ ===
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+
+    # === ترتیب نمایش اپ‌ها و مدل‌ها ===
+    "order_with_respect_to": [
+        "accounts", "accounts.user", "accounts.address",
+        "products", "products.category", "products.product", "products.productimage",
+        "seller", "seller.store", "seller.storeitem",
+        "cart", "cart.cart", "cart.cartitem",
+        "orders", "orders.order", "orders.orderitem", "orders.invoice", "orders.payment",
+        "review", "review.review",
+    ],
+
+    # === لینک‌های سفارشی (اختیاری) ===
+    "custom_links": {
+        # مثال:
+        # "products": [{
+        #     "name": "ایجاد دسته‌بندی", 
+        #     "url": "admin:products_category_add", 
+        #     "icon": "fas fa-plus",
+        #     "permissions": ["products.add_category"]
+        # }]
+    },
+
+    # === آیکون‌ها ===
+    "icons": {
+        "accounts": "fas fa-users-cog",
+        "accounts.user": "fas fa-user",
+        "accounts.address": "fas fa-address-book",
+        "auth.Group": "fas fa-users",
+        
+        "products": "fas fa-box-open",
+        "products.category": "fas fa-tags",
+        "products.product": "fas fa-box",
+        "products.productimage": "fas fa-images",
+        
+        "seller": "fas fa-store",
+        "seller.store": "fas fa-store-alt",
+        "seller.storeitem": "fas fa-archive",
+        
+        "cart": "fas fa-shopping-cart",
+        "cart.cart": "fas fa-shopping-basket",
+        "cart.cartitem": "fas fa-cart-arrow-down",
+        
+        "orders": "fas fa-receipt",
+        "orders.order": "fas fa-file-invoice",
+        "orders.orderitem": "fas fa-file-invoice-dollar",
+        "orders.invoice": "fas fa-file-invoice-dollar",
+        "orders.payment": "fas fa-money-bill-wave",
+        
+        "review": "fas fa-comment",
+        "review.review": "fas fa-comments",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+
+    # === سایر تنظیمات ===
+    "related_modal_active": False,
+    "custom_css": None,
+    "custom_js": None,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {
+        "auth.user": "collapsible", 
+        "auth.group": "vertical_tabs"
+    },
+    "language_chooser": False,
+}
+
+
+
+ADMIN_SITE_HEADER = "Customie Store Admin"
+
+ADMIN_SITE_TITLE = "Customie Store Administration"
+
+ADMIN_SITE_FOOTER = "© 2025 Customie Store. All rights reserved."
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]

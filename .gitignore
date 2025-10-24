@@ -5,3 +5,6 @@ __pycache__/
 .env
 /static/
 Final-Project
+# Ignore all migration files except __init__.py
+*/migrations/*.py
+!*/migrations/__init__.py

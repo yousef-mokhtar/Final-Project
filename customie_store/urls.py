@@ -15,8 +15,30 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from core.admin import custom_admin_site
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path('api-auth/', include('rest_framework.urls')),
+    path('api/accounts/', include('accounts.urls')),
+    path('api/orders/', include('orders.urls')),
+    path('api/orders/payments/', include('orders.urls_payment')),
+    path('api/products/', include('products.urls')),
+    path('api/seller/', include('seller.urls')),
+    path('api/cart/', include('cart.urls')),
+    path('api/review/', include('review.urls')),
+    path('admin/', custom_admin_site.urls),
+    path('api/myuser/', include('accounts.urls_myuser')),
+    path('api/categories/', include('products.urls_category')),
+    path('api/admin/', include('products.admin_urls')),
+
 ]
