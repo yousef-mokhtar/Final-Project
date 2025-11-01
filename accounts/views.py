@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from accounts.tasks import send_otp_code
 from .models import User, Address
-from .serializers import UserSerializer, AddressSerializer, OTPCodeRequestSerializer, OTPCodeVerifySerializer
+from .serializers import UserSerializer, AddressSerializer, OTPCodeRequestSerializer, OTPCodeVerifySerializer, CustomTokenObtainPairSerializer
 from .utils import save_otp, verify_otp
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
@@ -32,12 +32,9 @@ class RegisterView(generics.CreateAPIView):
 
 
 class LoginView(TokenObtainPairView):
-    pass
+    serializer_class = CustomTokenObtainPairSerializer
 
 class TokenRefresh(TokenRefreshView):
-    pass
-
-class OTPRequestView(generics.GenericAPIView):
     pass
 
 
@@ -67,7 +64,6 @@ class AddressViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    # Soft delete
     def perform_destroy(self, instance):
         instance.is_deleted = True
         instance.save()
@@ -83,57 +79,52 @@ class OTPRequestView(generics.GenericAPIView):
         username = serializer.validated_data['username']
 
         user = get_object_or_404(User, username=username)
-        phone = user.phone
+        email = user.email 
 
-        if not phone:
+        if not email:
             return Response(
-                {'error': 'کاربر شماره تلفن ثبت شده‌ای ندارد.'},
+                {'error': 'کاربر ایمیل ثبت شده‌ای ندارد.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         code = str(random.randint(100000, 999999))
-        save_otp(phone=phone, otp=code)
+        save_otp(username=username, otp=code)
 
         send_otp_code.delay(user.id, code)
 
-        return Response({'message': f'کد OTP به شماره {phone} ارسال شد.'}, status=status.HTTP_200_OK)
+        return Response({'message': f'کد OTP به ایمیل {email} ارسال شد.'}, status=status.HTTP_200_OK)
+
 
 class OTPVerifyView(generics.GenericAPIView):
-
-    # خواندن اوتیپی و شماره تلفن از کاربر
-    # خواندن اوتیپی از دیتابیس
-    # مچ کردن این دو
-    # اگر این دو باهم مچ بودن ثبت نام انجام میشه برای این کاربر
-    # اگر مچ نبود ارور بده 
-
     serializer_class = OTPCodeVerifySerializer
     permission_classes = [AllowAny]
 
-    @extend_schema(  # برای Swagger
+    @extend_schema(
         summary="Verify OTP code",
-        description="Verifies the OTP code and marks the user as verified."
+        description="Verifies the OTP code sent via email and marks the user as verified."
     )
-
     def post(self, request, *args, **kwargs):
-        # دریافت داده‌ها از درخواست
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        phone = serializer.validated_data['phone']
+        username = serializer.validated_data['username']
         code = serializer.validated_data['code']
 
-        if verify_otp(phone=phone, otp=code):
+        user = get_object_or_404(User, username=username, is_deleted=False)
+        # email = user.email
+
+        if verify_otp(username=username, otp=code):
             try:
-                user = User.objects.get(phone=phone, is_deleted=False)
+                # user = User.objects.get(email=email, is_deleted=False)
                 user.is_verified = True
                 user.save()
                 return Response(
-                    {'message': 'کد OTP تأیید شد و کاربر تأیید شد.'},
+                    {'message': 'حساب کاربری شما با موفقیت تأیید شد.'},
                     status=status.HTTP_200_OK
                 )
             except User.DoesNotExist:
                 return Response(
-                    {'error': 'کاربری با این شماره تلفن یافت نشد.'},
+                    {'error': 'کاربری با این ایمیل یافت نشد.'},
                     status=status.HTTP_404_NOT_FOUND
                 )
         else:

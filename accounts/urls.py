@@ -1,6 +1,5 @@
 from django.urls import path
-from .views import UserProfileView, RegisterView, OTPRequestView, OTPVerifyView, AddressViewSet
-from seller.views import RegisterAsSellerView
+from .views import RegisterView, OTPRequestView, OTPVerifyView, LoginView, TokenRefresh, UserProfileView, AddressViewSet
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -8,13 +7,12 @@ router.register(r'addresses', AddressViewSet, basename='address')
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
-    path('profile/', UserProfileView.as_view(), name='profile'), # قبلی
-    path('myuser/', UserProfileView.as_view(), name='myuser'), # جدید
-    path('otp/request/', OTPRequestView.as_view(), name='otp-request'),
-    path('otp/verify/', OTPVerifyView.as_view(), name='verify-otp'),
-    path('myuser/register_as_seller/', RegisterAsSellerView.as_view(), name='register_as_seller'), # این یکی الان مطابق لیست دوست هست
+    path('request-otp/', OTPRequestView.as_view(), name='otp-request'),
+    path('verify-otp/', OTPVerifyView.as_view(), name='otp-verify'),
+    path('token/', LoginView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefresh.as_view(), name='token_refresh'),
+    path('myuser/', UserProfileView.as_view(), name='myuser'),
 ] + router.urls
-
 
 # from django.urls import path
 # from .views import RegisterView, OTPRequestView, OTPVerifyView
@@ -24,7 +22,6 @@ urlpatterns = [
 #     path('request-otp/', OTPRequestView.as_view(), name='otp-request'),
 #     path('verify-otp/', OTPVerifyView.as_view(), name='otp-verify'),
 # ]
-
 
 
 # from django.urls import path
