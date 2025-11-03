@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 from .models import User, Address
-from .serializers import UserSerializer, AddressSerializer
+from django.urls import reverse
 
 class AccountsTest(APITestCase):
 
@@ -16,7 +16,7 @@ class AccountsTest(APITestCase):
         }
     
     def test_register(self):
-        response = self.client.post('/api/accounts/register/', self.user_data)
+        response = self.client.post(reverse('register'), self.user_data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 1)
@@ -27,9 +27,11 @@ class AccountsTest(APITestCase):
     def test_login(self):
         User.objects.create_user(**self.user_data)
         login_data = {'email': 'test@test.com', 'password': 'testpass123'}
-        response = self.client.post('/api/token/', login_data)
+        response = self.client.post(reverse('token_obtain_pair'), login_data)
+        
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
+        self.assertIn('refresh', response.data)
     
     def test_address_create(self):
         user = User.objects.create_user(**self.user_data)
@@ -41,7 +43,10 @@ class AccountsTest(APITestCase):
             'postal_code': '1234567890',
             'address_line': 'خیابان تست'
         }
-        response = self.client.post('/api/accounts/addresses/', address_data)
+        
+        url = reverse('myuser-address-list')
+        response = self.client.post(url, address_data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Address.objects.count(), 1)
+        self.assertEqual(Address.objects.first().user, user)

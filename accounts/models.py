@@ -10,7 +10,8 @@ class User(AbstractUser, BaseModel):
 
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username", "phone"]
+    REQUIRED_FIELDS = ["username", "first_name", "last_name", "phone"]
+
 
 class Address(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
